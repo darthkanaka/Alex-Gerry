@@ -111,6 +111,21 @@
             min-height: 0;
         }
 
+        .gallery-item.hero-full {
+            grid-column: span 3;
+        }
+
+        .gallery-item.hero-wide {
+            grid-column: span 2;
+        }
+
+        @media (max-width: 768px) {
+            .gallery-item.hero-full,
+            .gallery-item.hero-wide {
+                grid-column: span 3;
+            }
+        }
+
         .gallery-item img {
             width: 100%;
             height: auto;
@@ -289,7 +304,10 @@
         
         // Portrait images - based on actual image dimensions
         const portraitIndices = [2, 3, 7, 13, 17, 23, 26, 27, 28, 29, 30, 32, 39, 40, 41, 43, 44, 56, 57];
-        
+
+        // Hero images - spaced throughout gallery
+        const heroIndices = [19, 32, 53, 57];
+
         const gallery = document.getElementById('gallery');
         let currentIndex = 0;
         const images = [];
@@ -316,7 +334,15 @@
         // Create gallery items
         reorderedImages.forEach((image, index) => {
             const item = document.createElement('div');
-            item.className = 'gallery-item' + (image.portrait ? ' portrait' : '');
+            const imageNum = image.originalIndex + 1;
+            const isHero = heroIndices.includes(imageNum);
+
+            let className = 'gallery-item';
+            if (image.portrait) className += ' portrait';
+            if (isHero) {
+                className += image.portrait ? ' hero-wide' : ' hero-full';
+            }
+            item.className = className;
             item.onclick = () => openLightbox(index);
 
             const img = document.createElement('img');
