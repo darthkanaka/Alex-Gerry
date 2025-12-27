@@ -112,6 +112,12 @@
 
         .gallery-item.hero-wide {
             grid-column: span 2;
+            grid-row: span 2;
+        }
+
+        .gallery-item.hero-wide img {
+            height: 100%;
+            object-fit: cover;
         }
 
         @media (max-width: 768px) {
@@ -296,12 +302,15 @@
         const imageCount = 57;
         const startNumber = 101;
         const baseUrl = './images/';
-        
+
         // Portrait images - based on actual image dimensions
         const portraitIndices = [2, 3, 7, 13, 17, 23, 26, 27, 28, 29, 30, 32, 39, 40, 41, 43, 44, 56, 57];
 
         // Hero images - A_G-115, A_G-130, A_G-149, A_G-153
         const heroIndices = [15, 30, 49, 53];
+
+        // Shoe images (A_G-140 to A_G-145) - indices 40-45
+        const shoeIndices = [40, 41, 42, 43, 44, 45];
 
         const gallery = document.getElementById('gallery');
         let currentIndex = 0;
@@ -312,29 +321,76 @@
             const num = startNumber + i;
             const filename = `A_G-${num}.jpg`;
             const isPortrait = portraitIndices.includes(i + 1);
+            const isHero = heroIndices.includes(i + 1);
+            const isShoe = shoeIndices.includes(i + 1);
             images.push({
                 src: `${baseUrl}${filename}`,
                 filename: filename,
                 portrait: isPortrait,
-                originalIndex: i
+                originalIndex: i,
+                isHero: isHero,
+                isShoe: isShoe
             });
         }
 
-        // Move shoe images (39-44) to the end
-        const shoeIndices = [39, 40, 41, 42, 43, 44];
-        const shoeImages = images.filter((_, i) => shoeIndices.includes(i + 1));
-        const otherImages = images.filter((_, i) => !shoeIndices.includes(i + 1));
-        const reorderedImages = [...otherImages, ...shoeImages];
+        // Separate images by type
+        const shoes = images.filter(img => img.isShoe);
+        const heroes = images.filter(img => img.isHero);
+        const regularPortraits = images.filter(img => img.portrait && !img.isHero && !img.isShoe);
+        const regularLandscapes = images.filter(img => !img.portrait && !img.isHero && !img.isShoe);
+
+        // Design the layout: group by orientation, insert heroes strategically
+        const reorderedImages = [];
+
+        // Start with some landscapes (3 per row)
+        reorderedImages.push(...regularLandscapes.slice(0, 6));
+
+        // Landscape hero 1 (A_G-115, index 15)
+        const hero15 = heroes.find(h => h.originalIndex + 1 === 15);
+        if (hero15) reorderedImages.push(hero15);
+
+        // More landscapes
+        reorderedImages.push(...regularLandscapes.slice(6, 12));
+
+        // Portrait hero (A_G-130, index 30) with 2 stacked portraits
+        const hero30 = heroes.find(h => h.originalIndex + 1 === 30);
+        if (hero30) reorderedImages.push(hero30);
+        reorderedImages.push(...regularPortraits.slice(0, 2));
+
+        // Group of portraits (3 columns, each portrait takes 1 column)
+        reorderedImages.push(...regularPortraits.slice(2, 8));
+
+        // More landscapes
+        reorderedImages.push(...regularLandscapes.slice(12, 18));
+
+        // Landscape hero 2 (A_G-149, index 49)
+        const hero49 = heroes.find(h => h.originalIndex + 1 === 49);
+        if (hero49) reorderedImages.push(hero49);
+
+        // More landscapes
+        reorderedImages.push(...regularLandscapes.slice(18, 24));
+
+        // Landscape hero 3 (A_G-153, index 53)
+        const hero53 = heroes.find(h => h.originalIndex + 1 === 53);
+        if (hero53) reorderedImages.push(hero53);
+
+        // Remaining portraits
+        reorderedImages.push(...regularPortraits.slice(8));
+
+        // Remaining landscapes
+        reorderedImages.push(...regularLandscapes.slice(24));
+
+        // Shoes at the end
+        reorderedImages.push(...shoes);
 
         // Create gallery items
         reorderedImages.forEach((image, index) => {
             const item = document.createElement('div');
             const imageNum = image.originalIndex + 1;
-            const isHero = heroIndices.includes(imageNum);
 
             let className = 'gallery-item';
             if (image.portrait) className += ' portrait';
-            if (isHero) {
+            if (image.isHero) {
                 className += image.portrait ? ' hero-wide' : ' hero-full';
             }
             item.className = className;
