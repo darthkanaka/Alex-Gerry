@@ -267,18 +267,43 @@
             opacity: 0;
             pointer-events: none;
         }
+
+        /* Fade-in on scroll animation */
+        .gallery-item {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.8s ease, transform 0.8s ease;
+        }
+
+        .gallery-item.in-view {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Stagger animation delay for items */
+        .gallery-item:nth-child(3n+1) { transition-delay: 0s; }
+        .gallery-item:nth-child(3n+2) { transition-delay: 0.1s; }
+        .gallery-item:nth-child(3n+3) { transition-delay: 0.2s; }
+
+        /* Header parallax styles */
+        .header-content {
+            transition: transform 0.1s linear;
+            will-change: transform;
+        }
     </style>
 </head>
 <body>
     <header>
-        <h1 class="names">Alex <span class="ampersand">&</span> Gerry</h1>
-        <p class="tagline">Engagement Session</p>
-        <a href="https://www.dropbox.com/scl/fo/vspvifupktpjqu527n09t/AE3UqchzEekB6msKxhh8B1Q?rlkey=zdwutq1k9n0f21xl0tl62bykp&st=mskq3r0t&dl=0" target="_blank" rel="noopener noreferrer" class="download-btn">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-            </svg>
-            Download All Photos
-        </a>
+        <div class="header-content">
+            <h1 class="names">Alex <span class="ampersand">&</span> Gerry</h1>
+            <p class="tagline">Engagement Session</p>
+            <a href="https://www.dropbox.com/scl/fo/vspvifupktpjqu527n09t/AE3UqchzEekB6msKxhh8B1Q?rlkey=zdwutq1k9n0f21xl0tl62bykp&st=mskq3r0t&dl=0" target="_blank" rel="noopener noreferrer" class="download-btn">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                </svg>
+                Download All Photos
+            </a>
+        </div>
     </header>
 
     <main class="gallery" id="gallery"></main>
@@ -445,6 +470,45 @@
 
         document.getElementById('lightbox').addEventListener('click', (e) => {
             if (e.target.id === 'lightbox') closeLightbox();
+        });
+
+        // Fade-in on scroll using Intersection Observer
+        const observerOptions = {
+            root: null,
+            rootMargin: '0px 0px -50px 0px',
+            threshold: 0.1
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('in-view');
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.gallery-item').forEach(item => {
+            observer.observe(item);
+        });
+
+        // Soft parallax on header
+        const headerContent = document.querySelector('.header-content');
+        let ticking = false;
+
+        window.addEventListener('scroll', () => {
+            if (!ticking) {
+                requestAnimationFrame(() => {
+                    const scrollY = window.scrollY;
+                    const parallaxAmount = scrollY * 0.3;
+                    const opacityAmount = Math.max(0, 1 - scrollY / 400);
+
+                    headerContent.style.transform = `translateY(${parallaxAmount}px)`;
+                    headerContent.style.opacity = opacityAmount;
+
+                    ticking = false;
+                });
+                ticking = true;
+            }
         });
     </script>
 </body>
