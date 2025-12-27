@@ -268,11 +268,11 @@
             pointer-events: none;
         }
 
-        /* Fade-in on scroll animation */
+        /* Fade-in/out on scroll animation */
         .gallery-item {
             opacity: 0;
-            transform: translateY(30px);
-            transition: opacity 0.8s ease, transform 0.8s ease;
+            transform: translateY(20px);
+            transition: opacity 1.5s ease, transform 1.5s ease;
         }
 
         .gallery-item.in-view {
@@ -282,13 +282,13 @@
 
         /* Stagger animation delay for items */
         .gallery-item:nth-child(3n+1) { transition-delay: 0s; }
-        .gallery-item:nth-child(3n+2) { transition-delay: 0.1s; }
-        .gallery-item:nth-child(3n+3) { transition-delay: 0.2s; }
+        .gallery-item:nth-child(3n+2) { transition-delay: 0.15s; }
+        .gallery-item:nth-child(3n+3) { transition-delay: 0.3s; }
 
         /* Header parallax styles */
         .header-content {
-            transition: transform 0.1s linear;
-            will-change: transform;
+            transition: transform 0.15s linear, opacity 0.15s linear;
+            will-change: transform, opacity;
         }
     </style>
 </head>
@@ -472,17 +472,20 @@
             if (e.target.id === 'lightbox') closeLightbox();
         });
 
-        // Fade-in on scroll using Intersection Observer
+        // Fade-in/out on scroll using Intersection Observer
         const observerOptions = {
             root: null,
-            rootMargin: '0px 0px -50px 0px',
-            threshold: 0.1
+            rootMargin: '50px 0px -50px 0px',
+            threshold: 0.15
         };
 
         const observer = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
                 if (entry.isIntersecting) {
                     entry.target.classList.add('in-view');
+                } else {
+                    // Fade out when leaving viewport
+                    entry.target.classList.remove('in-view');
                 }
             });
         }, observerOptions);
@@ -499,8 +502,8 @@
             if (!ticking) {
                 requestAnimationFrame(() => {
                     const scrollY = window.scrollY;
-                    const parallaxAmount = scrollY * 0.3;
-                    const opacityAmount = Math.max(0, 1 - scrollY / 400);
+                    const parallaxAmount = scrollY * 0.15;
+                    const opacityAmount = Math.max(0, 1 - scrollY / 500);
 
                     headerContent.style.transform = `translateY(${parallaxAmount}px)`;
                     headerContent.style.opacity = opacityAmount;
